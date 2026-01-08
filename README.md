@@ -1,46 +1,92 @@
 # Comparative Analysis For Fake News Detection Using Machine Learning And Deep Learning
 
-This project builds and compares two approaches for fake-news detection using Natural Language Processing (NLP):
-1) A **classical machine-learning model** using **Linear SVC** with **TF–IDF + POS-based features**
-2) A **deep-learning transformer model** using **DistilBERT** fine-tuning
+This repository contains an NLP project for **fake-news detection** using two approaches:
 
-The project is evaluated on **WELFake** (primary dataset) and validated on **ISOT** (generalization test).
+- **Machine Learning (ML):** TF–IDF + POS-based features → **Linear SVC (C=2.0)**
+- **Deep Learning (DL):** Transformer fine-tuning using **DistilBERT (distilbert-base-uncased)**
 
----
-
-## Datasets
-- **WELFake** (Verma et al.) — combined from multiple sources (Kaggle, McIntire, Reuters, BuzzFeed Political)
-- **ISOT** (Ahmed et al.) — used as an external dataset to assess generalizability
-
-> Note: Datasets are not included in this repository. Please download them from their official sources and place them in the paths described below.
+The models are trained and evaluated on two datasets:
+- **WELFake** (primary dataset)
+- **ISOT** (used to validate generalizability)
 
 ---
 
-## Methods Overview
+## Project Overview
 
-### 1) Machine Learning Pipeline (Linear SVC)
-- Data cleaning (lowercasing, URL/HTML/emoji removal, whitespace normalization)
-- Combine `title + text` into one input column
-- POS tagging → compute POS **proportions** (noun/verb/adj/adv + modal)
+Fake news spreads quickly on social media, making manual fact-checking difficult at scale. This project builds automated fake-news classifiers and compares:
+1) A  classical baseline (LinearSVC with engineered text features)
+2) A transformer-based model (DistilBERT) that captures contextual meaning
+
+---
+
+## Datasets (Included)
+
+This repository includes the datasets in the `data/` directory.
+
+- **WELFake** (Verma et al.)
+- **ISOT** (Ahmed et al.)
+
+---
+## Preprocessing
+
+### Shared preprocessing (applied to both datasets)
+- Missing values check using `df.info()`
+  - **WELFake:** missing values in `title` and `text`
+    - Missing `title` → replaced with `""`
+    - Missing `text` → row dropped
+  - **ISOT:** no missing values
+- Text normalization:
+  - lowercase
+  - whitespace cleanup
+  - remove URLs
+  - remove HTML tags
+  - remove emojis
+- Combine `title + text` into a single input column
+
+### ML-only preprocessing
+- Remove punctuation **except** hyphens (`-`) and apostrophes (`'`)
+- Remove stopwords
 - POS-aware lemmatization
-- TF–IDF vectorization:
-  - max_features = 50,000
-  - ngram_range = (1, 2)
-  - min_df = 5
-  - max_df = 0.8
-- Model: **LinearSVC (C = 2.0)**
 
-### 2) Deep Learning Pipeline (DistilBERT)
-- Tokenization using `distilbert-base-uncased`
-- Inputs: `input_ids` + `attention_mask` (max length = 512)
-- Model: `AutoModelForSequenceClassification` (num_labels = 2)
-- Training setup:
-  - epochs = 3
-  - batch size = 32
-  - optimizer = AdamW (lr = 2e-5)
-  - scheduler = linear warmup (10% warmup steps)
-  - gradient clipping = 1.0
-  - best checkpoint selected by validation performance
+### DL preprocessing
+- No extra text cleaning beyond the shared steps (tokenizer handles text)
+
+---
+
+## Text Representation
+
+### ML representation
+- **POS features (proportions):** noun / verb / adjective / adverb (+ modal verbs)
+- **TF–IDF Vectorization:**
+  - `max_features = 50000`
+  - `ngram_range = (1, 2)`
+  - `min_df = 5`
+  - `max_df = 0.8`
+
+### DL representation (DistilBERT)
+Text is tokenized into:
+- `input_ids` (token indices used to retrieve embeddings)
+- `attention_mask` (marks real tokens vs padding)
+- `max_length = 512`
+
+---
+
+## Models
+
+### 1) Machine Learning Model — LinearSVC
+- Model: `LinearSVC(C=2.0)`
+- Trained on: **TF–IDF + POS-proportion features**
+
+### 2) Deep Learning Model — DistilBERT
+- Model: `distilbert-base-uncased` (`AutoModelForSequenceClassification`, `num_labels=2`)
+- Training configuration:
+  - `EPOCHS = 3`
+  - `BATCH_SIZE = 32`
+  - `MAX_LEN = 512`
+  - Optimizer: `AdamW(lr=2e-5)`
+  - Scheduler: linear warmup (`warmup = 10% of total steps`)
+  - Gradient clipping: `max_norm = 1.0`
+  - Best checkpoint selected by **validation performance**
 
 ---
 
@@ -53,8 +99,8 @@ The project is evaluated on **WELFake** (primary dataset) and validated on **ISO
 | DistilBERT | 0.9953 | 0.9957 | 0.9951 | 0.9954 |
 
 **Confusion Matrix (WELFake):**
-- LinearSVC: 72 FP, 20 FN  
-- DistilBERT: 3 FP, 3 FN  
+- LinearSVC: **72 FP**, **20 FN**
+- DistilBERT: **3 FP**, **3 FN**
 
 ### ISOT
 | Model | Accuracy | Precision | Recall | F1 |
@@ -64,5 +110,12 @@ The project is evaluated on **WELFake** (primary dataset) and validated on **ISO
 
 ---
 
-## Repository Structure
-Suggested structure (edit based on your actual files):
+## Installation
+
+### 1) Create a virtual environment
+```bash
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
