@@ -98,9 +98,6 @@ Text is tokenized into:
 | LinearSVC | 0.9735 | 0.9666 | 0.9825 | 0.9744 |
 | DistilBERT | 0.9953 | 0.9957 | 0.9951 | 0.9954 |
 
-**Confusion Matrix (WELFake):**
-- LinearSVC: **72 FP**, **20 FN**
-- DistilBERT: **3 FP**, **3 FN**
 
 ### ISOT
 | Model | Accuracy | Precision | Recall | F1 |
@@ -112,10 +109,12 @@ Text is tokenized into:
 
 ## Installation
 
-### 1) Create a virtual environment
+```markdown
+## Installation
 ```bash
 python -m venv venv
 # Windows:
 venv\Scripts\activate
 # macOS/Linux:
 source venv/bin/activate
+pip install -r requirements.txt
